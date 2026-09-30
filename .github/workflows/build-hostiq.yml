@@ -32,8 +32,28 @@ jobs:
         run: |
           mkdir -p out
           cp public/send-form.php out/send-form.php
-          cp public/.htaccess out/.htaccess
-          cp public/.user.ini out/.user.ini
+          cat > out/.user.ini <<'INI'
+          upload_max_filesize=5M
+          post_max_size=12M
+          max_file_uploads=4
+          max_execution_time=60
+          INI
+          cat > out/.htaccess <<'HTACCESS'
+          DirectoryIndex index.html
+          Options -Indexes
+          AddDefaultCharset UTF-8
+          RewriteEngine On
+          RewriteRule ^cs(?:/(.*))?/?$ /cz/$1 [R=308,L,NE]
+          <IfModule mod_headers.c>
+            Header always set X-Content-Type-Options "nosniff"
+            Header always set Referrer-Policy "strict-origin-when-cross-origin"
+            Header always set X-Frame-Options "SAMEORIGIN"
+            Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+          </IfModule>
+          <FilesMatch "(^\.|\.(env|ini|log|sql|bak|config)$)">
+            Require all denied
+          </FilesMatch>
+          HTACCESS
           cat > out/index.html <<'HTML'
           <!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/pl/"><link rel="canonical" href="https://silvotech.eu/pl/"><title>SilvoTech</title><script>location.replace('/pl/');</script></head><body><p><a href="/pl/">Przejdź do strony SilvoTech</a></p></body></html>
           HTML
