@@ -1,0 +1,48 @@
+name: Build HOSTiQ upload package
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'next.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-hostiq.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Remove server-only files from the static hosting build
+        run: |
+          rm -f middleware.ts
+          rm -rf app/actions 'app/(root)' 'app/[lang]/prezentacja' components/sections/contact.tsx
+      - run: npm run build
+      - name: Verify hosting package
+        run: |
+          test -f out/index.html
+          test -f out/send-form.php
+          test -f out/.htaccess
+          test -d out/pl
+          test -d out/en
+          test -d out/de
+          test -d out/cz
+          test -d out/sk
+      - name: Create upload archive
+        run: cd out && zip -qr ../silvotech-hostiq-upload.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: silvotech-hostiq-upload
+          path: silvotech-hostiq-upload.zip
+          if-no-files-found: error
+          retention-days: 14
