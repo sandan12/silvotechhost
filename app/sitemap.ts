@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { locales } from '@/lib/i18n';
+export const dynamic = 'force-static';
 const routes = ['', '/oferta', '/produkcja', '/o-nas', '/wspolpraca', '/dokumenty', '/kontakt', '/polityka-prywatnosci'];
 export default function sitemap(): MetadataRoute.Sitemap {
   return locales.flatMap((lang) => routes.map((route) => ({
